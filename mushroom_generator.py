@@ -1,59 +1,69 @@
 import pygame
 from config import *
-import os
 
-speed = 10
-speed_enemies = 10
-max_enemies = 10
-size_enemies = (40,40)
 
-goomba = [pygame.image.load(os.path.join("src/recursos/bichos","0.png")),
-        pygame.image.load(os.path.join("src/recursos/bichos","1.png")),
+enemigo_goomba = [pygame.image.load("./src/recursos/bichos/0.png"),
+        pygame.image.load("./src/recursos/bichos/1.png"),
+        pygame.image.load("./src/recursos/bichos/2.png")
         ]
 
-def rescalar_img(lista):
-    lista_resc = []
-    for i in lista:
-        img_resc = pygame.transform.scale(i, (40,35))
-        lista_resc.append(img_resc)
-    return lista_resc
-
-
-goomba = rescalar_img(goomba)
-
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self,x,y):
-        super().__init__() 
-        self.image = goomba[0] 
+    def __init__(self, tamaño,animacion,coordenadas ):
+        super().__init__()
+        self.ancho = tamaño[0]
+        self.alto = tamaño[1]
+        self.size = (self.ancho,self.alto)
+        self.animaciones = animacion
+        self.reescalar_animacion()
+        self.image = self.animaciones[0]
+        self.velocidad = 10
+        self.vida = True
+        #rects
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.step_index = 0
-        self.hitbox = (self.rect.x, self.rect.y, 64, 64)
+        self.rect.x= coordenadas[0]
+        self.rect.y= coordenadas[1]
+        self.lados = obtener_rectangulos(self.rect)
+        self.contador_pasos = 0
 
+    def reescalar_animacion(self):
+            reescalar_imagenes(self.animaciones, self.size)
 
-    def step(self):
-        if self.step_index >= 2:
-            self.step_index = 0
+    def mover(self):
+        for lado in self.lados:
+            self.lados[lado].x -= self.velocidad
+            if self.lados[lado].x < 0:
+                self.kill()
 
-    def off_screen(self):
-        return not (self.rect.x - self.rect.width )
+    def animar(self,pantalla):
+        self.vida = True
+        animacion_enemigo = self.animaciones
+        largo = len(animacion_enemigo) - 1 
+        
+        if self.contador_pasos >= largo:
+            self.contador_pasos = 0
+        pantalla.blit(animacion_enemigo[self.contador_pasos], self.lados["main"])
+        self.contador_pasos += 1
+        if not self.vida:
+            pantalla.blit(animacion_enemigo[2], self.lados["main"])
 
-    def update(self):
-        # self.hitbox = (self.rect.x -10, self.rect.y , 40, 40)
-        # pygame.draw.rect(screen, (0, 0, 0), self.hitbox, 3)
-        self.rect.x -= 15
-        self.step()
-        self.image = goomba[self.step_index]
-        self.step_index += 1
-        if self.rect.x < 0:
-            self.kill()
-    
-    def draw_hitbox(self,screen):
-        self.hitbox = (self.rect.x -10, self.rect.y , 40, 40)
-        pygame.draw.rect(screen, (0, 0, 0), self.hitbox, 3)
-    
-    
+    def draw_rect(self,pantalla):
+        for lado in self.lados:
+                pygame.draw.rect(pantalla, "Blue", self.lados[lado],3)
+
+    def seguir_scroll(self,fondo,personaje):
+        for lado in self.lados:
+            if fondo.desplazamiento_derecha and personaje.que_hace == "derecha":
+                self.lados[lado].x -= 20
+            elif fondo.desplazamiento_izquierda and personaje.que_hace == "izquierda":
+                self.lados[lado].x += 20
+                
+    def update(self,pantalla,fondo,personaje):
+        self.seguir_scroll(fondo,personaje)
+        self.mover()
+        self.animar(pantalla)
+        # if self.fuera_de_pantalla:
+        #     self.kill()
+
 
 
 

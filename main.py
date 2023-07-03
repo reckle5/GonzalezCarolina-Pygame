@@ -1,4 +1,4 @@
-import pygame 
+import pygame
 import sys
 from config import *
 from personaje import *
@@ -7,102 +7,73 @@ from sprites_personaje import *
 from modo import *
 from background import *
 from mushroom_generator import *
-import random
-
+from class_plataforma import *
 
 pygame.init()
 
-reloj = pygame.time.Clock()
-display = pygame.display.set_mode((WIDTH,HEIGHT))
+RELOJ = pygame.time.Clock() 
+pantalla_juego = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Spidey Game")
 
-sprites = pygame.sprite.Group()
-baddies  = pygame.sprite.Group()
+mi_spiderman = Spidey(tamaño_personaje,dic_animaciones,coordenadas,15)
+# proyectil_telaraña = Telaraña((30,40), 10, personaje_telaraña,(mi_spiderman.lados["main"].x,mi_spiderman.lados["main"].y),1)
 
-player = Spidey(coordenadas,personaje_camina,posicion_actual_x)
-bg = pygame.image.load("./src/recursos/rooms/level_1.png").convert()
+fondo_juego = Background(fondo_img, WIDTH)
 
-backg = Background(bg, WIDTH, player)
+piso = Piso(mi_spiderman,1500)
+# coli = Piso(mi_spiderman,3312,fondo_juego.ancho)
 
-web = Web(personaje_telaraña, player.rect.x, player.rect.y, player.direction())
+plataforma_caja1 = Plataforma((50,50), caja_moneda, (700, 620))
+plataforma_caja2 = Plataforma((50,50), caja_moneda, (800, 620))
+# plataforma_caja3 = Plataforma((50,50), caja_moneda, (1800, 630))
+# plataforma_caja4 = Plataforma((50,50), caja_moneda, (2100, 630))
+# plataforma_caja5 = Plataforma((50,50), caja_moneda, (2500, 630))
+plataforma_ladrillo = Plataforma((50,50),caja_ladrillo,(750,620))
 
 
-lados_floor = obtener_rectangulos(backg.floor)
-lados_floor2 = obtener_rectangulos(backg.floor2)
 
-lados_personajes = obtener_rectangulos(player.rect)
+# goomba = Enemy(tamaño_goomba, enemigo_goomba, coordenadas_enemigo)
 
-lista_plataformas = [lados_floor,lados_floor2]
-accion = "quieto"
-
+# lista_plataformas = [lados_piso]
 teclas_presionadas = {}
 
+player_group = pygame.sprite.Group()
+player_group.add(mi_spiderman) 
 
-def aplicar_gravedad(pantalla, animacion,plataformas,lados_personajes):
-    global desplazamiento_y
-    global esta_saltando
-    if esta_saltando:
-        player.animar_personaje(pantalla,animacion)
-        for lado in lados_personajes:
-            lados_personajes[lado].y += desplazamiento_y
-        if (desplazamiento_y + gravedad) < limite_velocidad_caida:
-            desplazamiento_y += gravedad
-    for piso in plataformas:
-        if lados_personajes['bottom'].colliderect(piso['top']):
-            desplazamiento_y = 0
-            esta_saltando = False
-            lados_personajes['main'].bottom = piso['main'].top
-            break
-        else:
-            esta_saltando = True
-    return
-
-def actualizar_pantalla(pantalla, accion, plataformas,lados_personaje):
-    global esta_saltando
-    global desplazamiento_y,fps
-
-    match accion:
-        case "caminar derecha":
-            if not esta_saltando:
-                player.animar_personaje(pantalla,personaje_camina)
-            player.mover_personaje_derecha(lados_personaje)
-        case "caminar izquierda":
-            if not esta_saltando: 
-                player.animar_personaje(pantalla,personaje_camina_izquierda)
-            player.mover_personaje_izquierda(lados_personajes)
-            player.posicion -= 1
-        case "saltar":  
-            esta_saltando = True
-            desplazamiento_y = potencia_salto
-        case "defensa" :
-            if not esta_saltando: 
-                player.animar_una_vez(pantalla, personaje_defensa)  
-        case "ataque" :
-            if not esta_saltando:
-                player.animar_personaje(pantalla,personaje_ataque)
-                player.ataque(web,baddies,pantalla)
-                web.update(pantalla)
-
-                
-                
-        case "quieto": 
-            if not esta_saltando:
-                player.animar_personaje(pantalla, personaje_quieto)
-    aplicar_gravedad(pantalla, personaje_salta, plataformas, lados_personajes)
+proyectil_group = pygame.sprite.Group()
+enemigos_group = pygame.sprite.Group()
+plataformas_group = pygame.sprite.Group()
+plataformas_sorpresa_group = pygame.sprite.Group()
+all_plataformas = pygame.sprite.Group()
+moneda_group = pygame.sprite.Group()
+plataformas_sorpresa_group.add(plataforma_caja1)
+plataformas_sorpresa_group.add(plataforma_caja2)
+plataformas_group.add(plataforma_ladrillo)
+# plataformas_group.add(plataforma_caja4)
+# plataformas_group.add(plataforma_caja5)
+plataformas_group.add(piso)
+all_plataformas.add(plataformas_sorpresa_group)
+all_plataformas.add(plataformas_group)
 
 
-def generate_enemies(count):
-    if len(baddies) == 0:
-        for i in range(count):
-            x = random.randrange(2000, 1689, -1)
-            enemy = Enemy(x, 760)
-            # enemy.update(display)
-            baddies.add(enemy)           
+def actualizar_pantalla(pantalla,fondo_img,lista_plataformas,g_plataformas_sorpresa,g_plataformas_ordinarias):
+    pantalla.blit(fondo_img, (0,0))
+    mi_spiderman.update(pantalla,enemigos_group,lista_plataformas,g_plataformas_sorpresa,g_plataformas_ordinarias,moneda_group)
+    all_plataformas.update(pantalla,fondo_juego,mi_spiderman)
+    proyectil_group.draw(pantalla)
+    moneda_group.update(pantalla,fondo_juego,mi_spiderman)
 
+
+def generar_enemigos(g_enemigos,cantidad):
+    if len(g_enemigos) == 0:
+        for i in range(cantidad):
+            x = random.randrange(2500, 1689, -1)
+            enemigo = Enemy(tamaño_goomba, enemigo_goomba, (x,760))
+            g_enemigos.add(enemigo)
+            
 while True:
     
-    reloj.tick(FPS)
-    current_time = pygame.time.get_ticks()
+    RELOJ.tick(FPS)
 
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -110,62 +81,74 @@ while True:
             sys.exit()
         elif evento.type == pygame.KEYDOWN:
             # Registrar la tecla presionada en el diccionario
-            teclas_presionadas[evento.key] = True   
+            teclas_presionadas[evento.key] = True           
         elif evento.type == pygame.KEYUP:
             # Eliminar la tecla del diccionario cuando se deja de presionar
             if evento.key in teclas_presionadas:
                 del teclas_presionadas[evento.key]
-            
+    # print(fondo_juego.ancho)
+    # print(mi_spiderman.rect.x)
     if pygame.K_TAB in teclas_presionadas: 
         cambiar_modo()
     elif pygame.K_RIGHT in teclas_presionadas:  
-        accion = "caminar derecha"
-        if player.posicion < stage_width:
-            print(stage_width)
-            print(player.posicion)  
-            player.posicion += player.speed_x
-        if player.posicion > backg.start_scrolling:
-            backg.scrollX(-20)
-    elif pygame.K_LEFT in teclas_presionadas:
-        accion = "caminar izquierda"
-        if player.posicion > 0:
-            player.posicion -= player.speed_x
-        if player.posicion < backg.start_scrolling:
-            backg.scrollX(20)
+        if mi_spiderman.lados["main"].x < WIDTH - mi_spiderman.velocidad - mi_spiderman.lados["main"].x:
+            mi_spiderman.que_hace = "derecha"
+        else:
+            mi_spiderman.velocidad = 0
+            mi_spiderman.que_hace = "derecha"
+        if mi_spiderman.lados["main"].x > fondo_juego.start_scrolling: 
+            fondo_juego.desplazamiento_derecha = True       
+            fondo_juego.desplazamiento_izquierda = False
+            fondo_juego.desplazamiento_x(-20)            
+    elif pygame.K_LEFT in teclas_presionadas: 
+        if mi_spiderman.lados["main"].x < WIDTH - mi_spiderman.velocidad - mi_spiderman.lados["main"].x: 
+            mi_spiderman.que_hace = "izquierda"
+        else:
+            mi_spiderman.velocidad = 0
+            mi_spiderman.que_hace = "izquierda"
+        if mi_spiderman.lados["main"].x > fondo_juego.start_scrolling:
+            fondo_juego.desplazamiento_derecha = False
+            fondo_juego.desplazamiento_izquierda = True
+            fondo_juego.desplazamiento_x(20)
     elif pygame.K_UP in teclas_presionadas: 
-        accion = "saltar" 
+            mi_spiderman.que_hace = "salta" 
+            print(mi_spiderman.saltos_actuales)
     elif pygame.K_DOWN in teclas_presionadas: 
-        accion = "defensa"
+        mi_spiderman.que_hace = "defensa"
     elif pygame.K_SPACE in teclas_presionadas: 
-        accion = "ataque"
+        mi_spiderman.que_hace = "dispara"   
+        proyectil_group.add(mi_spiderman.crear_proyectil())
+        mi_spiderman.cooldown_proyectil = 100
     else:
-        accion = "quieto"
+        mi_spiderman.que_hace = "quieto"
 
+    actualizar_pantalla(pantalla_juego,fondo_juego.image,all_plataformas,plataformas_sorpresa_group,plataformas_group)
+    generar_enemigos(enemigos_group,2)
+    proyectil_group.draw(pantalla_juego)
+    enemigos_group.update(pantalla_juego,fondo_juego,mi_spiderman)
+    proyectil_group.update(velocidad_proyectil,proyectil_group,enemigos_group)
 
-    display.blit(backg.image,(0,0))
-
-    actualizar_pantalla(display,accion,lista_plataformas,lados_personajes)
-    
-
-    generate_enemies(1)
-
-
-    baddies.update()
-    baddies.draw(display)
-    
     if get_mode() == True:
-        for lado in lados_personajes:
-            pygame.draw.rect(display, "Orange", lados_personajes[lado], 3)
-            pygame.display.update()
+        for lado in mi_spiderman.lados:
+            pygame.draw.rect(pantalla_juego, "Orange", mi_spiderman.lados[lado], 3)
         
-        for plat in lista_plataformas:
-            for lado in plat:
-                pygame.draw.rect(display, "Blue", plat[lado],3)
+        for enemigo in enemigos_group:
+            enemigo.draw_rect(pantalla_juego)
         
-        for i in baddies:
-            i.draw_hitbox(display)
         
-        web.draw_hitbox(display) 
+        for plataformas in all_plataformas:
+            plataformas.draw_rect(pantalla_juego)
+
+        # coli.draw_rect(pantalla_juego,"Black")
+
+
 
     pygame.display.flip()
+
+
+
+
+
+
+
 
