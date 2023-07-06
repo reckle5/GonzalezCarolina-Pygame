@@ -1,7 +1,8 @@
 import pygame
 from config import *
+from funciones import *
 
-modeda = [pygame.image.load("./src/recursos/coin/0.png"),
+moneda = [pygame.image.load("./src/recursos/coin/0.png"),
         pygame.image.load("./src/recursos/coin/1.png"),
         pygame.image.load("./src/recursos/coin/2.png"),
         pygame.image.load("./src/recursos/coin/3.png")
@@ -22,6 +23,7 @@ class Coin(pygame.sprite.Sprite):
         self.rect.y= coordenadas[1]
         self.lados = obtener_rectangulos(self.rect)
         self.contador = 0
+        self.time = None
 
     def reescalar_animacion(self):
             reescalar_imagenes(self.animaciones, self.size)

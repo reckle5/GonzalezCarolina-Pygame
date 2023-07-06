@@ -1,6 +1,7 @@
 import pygame
 from personaje import *
 from config import *
+from funciones import *
 
 
 personaje_camina_derecha = [pygame.image.load("./src/recursos/camina/0.png"),

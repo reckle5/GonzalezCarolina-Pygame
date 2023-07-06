@@ -2,8 +2,8 @@ import pygame
 from config import *
 from sprites_personaje import *
 from class_moneda import *
-
-
+from class_booster import *
+import time
 
 class Spidey(pygame.sprite.Sprite):
     def __init__(self, tamaño:tuple, animaciones:dict, posicion_inicial:tuple, velocidad:int):
@@ -17,7 +17,7 @@ class Spidey(pygame.sprite.Sprite):
         self.velocidad = velocidad
         self.desplazamiento_y = 0
         #GRAVEDAD 
-        self.gravedad = 2
+        self.gravedad = 3
         self.potencia = -15
         self.limite_vel_caida = 15
         self.esta_saltando = False
@@ -39,13 +39,18 @@ class Spidey(pygame.sprite.Sprite):
         #proyectiles
         self.cooldown_proyectil = 0
         #vida
-        self.vida_actual = 1000
-        self.vida_maxima = 1000
-        self.target_vida = 1000
+        self.vida_actual = 900
+        self.vida_maxima = 900
+        self.target_vida = 900
         #barra
-        self.barra_vida = 400
+        self.barra_vida = 300
         self.proporcion_vida = self.vida_maxima / self.barra_vida
         self.vida_cambio_velocidad = 5
+        #monedas
+        self.puntaje = 0
+        self.monedas = 0
+        self.puntaje_anterior = 0
+        self.puntaje_mas_alto = 0
 
     def recibir_daño(self,cantidad):
         if self.target_vida > 0:
@@ -58,11 +63,6 @@ class Spidey(pygame.sprite.Sprite):
             self.target_vida += cantidad
         if self.target_vida >= self.vida_maxima:
             self.target_vida = self.vida_maxima
-    
-    def vida_basica(self,pantalla):
-        largo_barra = self.target_vida/self.proporcion_vida
-        pygame.draw.rect(pantalla,(255,0,0),(10,10,largo_barra,25))
-        pygame.draw.rect(pantalla,(255,255,255),(10,10,self.barra_vida,25),4)
     
     def generar_barra_vida(self,pantalla):
         ancho_transicion = 0
@@ -77,13 +77,13 @@ class Spidey(pygame.sprite.Sprite):
             ancho_transicion = (self.target_vida - self.vida_actual) / self.proporcion_vida
             color_transicion = (255,255,0)
         
-        largo_barra = self.vida_actual/self.proporcion_vida +1
-        rectangulo_barra = pygame.Rect(10,45,largo_barra,25)
-        rectangulo_barra_transicion = pygame.Rect(rectangulo_barra.right,45,ancho_transicion,25)
+        largo_barra = self.vida_actual/self.proporcion_vida 
+        rectangulo_barra = pygame.Rect(10,20,largo_barra,20)
+        rectangulo_barra_transicion = pygame.Rect(rectangulo_barra.right,20,ancho_transicion,20)
 
         pygame.draw.rect(pantalla,(255,0,0),rectangulo_barra)
         pygame.draw.rect(pantalla,color_transicion,rectangulo_barra_transicion)
-        pygame.draw.rect(pantalla,(255,255,255),(10,45,self.barra_vida,25),4)
+        pygame.draw.rect(pantalla,(255,255,255),(10,20,self.barra_vida,20),4)
 
     def reescalar_animaciones(self):
         for clave in self.animaciones:
@@ -119,9 +119,11 @@ class Spidey(pygame.sprite.Sprite):
                 self.desplazamiento_y += self.gravedad
                 
         for plat in lista_plataformas:
+            if self.lados['top'].colliderect(plat.lados["bottom"]):
+                self.desplazamiento_y += self.gravedad
             if self.lados['bottom'].colliderect(plat.lados["top"]):
                 self.desplazamiento_y = 0
-                self.saltos_actuales = self.saltos
+                # self.saltos_actuales = self.saltos
                 self.esta_saltando = False
                 self.lados['main'].bottom = plat.lados['main'].top -2
                 break
@@ -139,38 +141,64 @@ class Spidey(pygame.sprite.Sprite):
             self.cooldown_proyectil -= 1
 
     def crear_proyectil(self):
-        self.cooldown()
         return Telaraña(tamaño_proyectil,velocidad_proyectil,personaje_telaraña,(self.lados["main"].x,self.lados["main"].y),self.direction())
     
     def crear_moneda(self,coordenadas:tuple):
-        return Coin(tamaño_moneda,modeda,coordenadas)
+        return Coin(tamaño_moneda,moneda,coordenadas)
     
-    def hit_collision(self,g_enemigos,g_sorpresa,g_ordinarias,g_moneda):
+    def crear_booster(self,coordenadas):
+        return Booster(hongo_rojo,coordenadas)
+    
+    def draw_puntaje(self,font,pantalla):
+        name = font.render("SPIDEY", True, "White")
+        puntaje = font.render(str(self.puntaje) , True, "White")
+        x = font.render("X" , True, "Orange")
+        moneda_score = font.render(str(self.monedas) , True, "White")
+
+        pantalla.blit(name,(700,10))
+        pantalla.blit(puntaje,(720,30))
+        pantalla.blit(x,(950,20))
+        pantalla.blit(moneda_score,(972,20))
+
+
+
+    def hit_collision(self,g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo):
         for enemigo in g_enemigos:
+            print(len(g_enemigos))
             if self.lados["bottom"].colliderect(enemigo.lados["top"]):
+                self.puntaje += 300
                 enemigo.kill()
-            elif self.lados["right"].colliderect(enemigo.lados["left"]):
-                print("tocado")
-                self.recibir_daño(200)
+            elif self.lados["right"].colliderect(enemigo.lados["main"]):
+                for i in range(len(g_enemigos)):
+                    self.recibir_daño(100)
         for plat in g_sorpresa:
-            if self.lados["top"].colliderect(plat.lados["bottom"]):
-                plat.golpeado = True
-                coordenadas = (plat.rect.x+5,plat.rect.y - 80)
-                g_moneda.add(self.crear_moneda(coordenadas))
+            if plat.golpeado == False:
+                if self.lados["top"].colliderect(plat.lados["bottom"]):
+                    plat.golpeado = True
+                    coordenadas = (plat.rect.x+5,plat.rect.y - 80)
+                    g_moneda.add(self.crear_moneda(coordenadas))
+        for plat in g_booster:
+            if plat.golpeado == False:
+                if self.lados["top"].colliderect(plat.lados["bottom"]):
+                    plat.golpeado = True
+                    coordenadas = (plat.rect.x+5,plat.rect.y - 80)
+                    g_hongo.add(self.crear_booster(coordenadas))
+        for hongo in g_hongo:
+            if self.lados["main"].colliderect(hongo.lados["main"]):
+                self.puntaje += 1000
+                self.recibir_vida(300)
+                hongo.kill()
         for plat in g_ordinarias:
             if self.lados["top"].colliderect(plat.lados["bottom"]):
                 plat.kill()
-            
+        for moneda in g_moneda:
+            if self.lados["main"].colliderect(moneda.lados["main"]):
+                self.puntaje += 100
+                self.monedas += 1
+                print(self.puntaje)
+                moneda.kill()
 
-        # for enemigo in g_enemigos:
-        #     lista_impactos = pygame.sprite.spritecollide(enemigo,g_player,True)
-        #     if len(lista_impactos) == 3:
-        #         print("game over")
-        #     for i in lista_impactos:
-        #         self.vidas -= 1 
-        #         print(self.vidas)
-
-    def update(self,pantalla,g_enemigos,g_plataformas,g_sorpresa,g_ordinarias,g_moneda):
+    def update(self,pantalla,g_enemigos,g_plataformas,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo):
         match self.que_hace:
             case "derecha":
                 self.derecha = True
@@ -193,6 +221,8 @@ class Spidey(pygame.sprite.Sprite):
             case "dispara" : 
                 if not self.esta_saltando:
                     self.animar_personaje(pantalla,"personaje_ataca")
+                    print(self.cooldown_proyectil)
+                    self.cooldown()
             case "quieto": 
                 if not self.esta_saltando:
                     if self.derecha:
@@ -200,8 +230,9 @@ class Spidey(pygame.sprite.Sprite):
                     elif self.izquierda:
                         self.animar_personaje(pantalla, "quieto_izquierda" )  
         self.aplicar_gravedad(pantalla,g_plataformas)
-        self.hit_collision(g_enemigos,g_sorpresa,g_ordinarias,g_moneda)
+        self.hit_collision(g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo)
         self.generar_barra_vida(pantalla)
+        self.draw_puntaje(font,pantalla)
 
 
 class Telaraña(pygame.sprite.Sprite):
@@ -231,22 +262,22 @@ class Telaraña(pygame.sprite.Sprite):
             self.lados["main"].x += velocidad 
         elif self.direction == -1:
             self.lados["main"].x -= velocidad 
-        
+    
     
     def off_screen(self):
         if self.lados["main"].x >= WIDTH + 100:
             self.kill()
 
-    
-    def hit_collision(self,g_proyectil,enemigo):
+    def hit_collision(self,g_proyectil,enemigo,personaje):
         for proyectil in g_proyectil:
-            if not self.off_screen():
                 lista = pygame.sprite.spritecollide(proyectil,enemigo,True)
                 if len(lista) != 0:
                     self.kill()
                     enemigo.vida = True
+                    personaje.puntaje += 300
 
-    def update(self,velocidad,g_proyectil,enemigo):
+
+    def update(self,velocidad,g_proyectil,enemigo,personaje):
         self.mover(velocidad)
-        self.hit_collision(g_proyectil,enemigo)
+        self.hit_collision(g_proyectil,enemigo,personaje)
 
