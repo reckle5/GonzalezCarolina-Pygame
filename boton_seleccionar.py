@@ -35,9 +35,7 @@ class Boton():
 
 		if pygame.mouse.get_pressed()[0] == 0:
 			self.clicked = False
-			
-
-
+	
 		return action
     
 	def seleccionar_texto(self, position):

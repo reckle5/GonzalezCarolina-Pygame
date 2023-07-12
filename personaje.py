@@ -3,12 +3,11 @@ from config import *
 from sprites_personaje import *
 from class_moneda import *
 from class_booster import *
-import time
+from pygame import mixer
 
 class Spidey(pygame.sprite.Sprite):
     def __init__(self, tamaño:tuple, animaciones:dict, posicion_inicial:tuple, velocidad:int):
         super().__init__()
-
         #CONFECCION
         self.ancho = tamaño[0]
         self.alto = tamaño[1]
@@ -17,12 +16,13 @@ class Spidey(pygame.sprite.Sprite):
         self.velocidad = velocidad
         self.desplazamiento_y = 0
         #GRAVEDAD 
-        self.gravedad = 3
-        self.potencia = -15
-        self.limite_vel_caida = 15
+        self.gravedad = 2
+        self.potencia = -22
+        self.limite_vel_caida = 22
         self.esta_saltando = False
-        self.saltos = 2
-        self.saltos_actuales = self.saltos
+        self.saltos_realizados = 2 
+        #NIVEL GANADO
+        self.siguiente_nivel = False
         #ANIMACIONES
         self.contador_pasos = 0
         self.que_hace = "quieto"
@@ -36,12 +36,14 @@ class Spidey(pygame.sprite.Sprite):
         self.rect.x = posicion_inicial[0]
         self.rect.y = posicion_inicial[1]
         self.lados = obtener_rectangulos(self.rect)
+        self.colision = False
         #proyectiles
         self.cooldown_proyectil = 0
         #vida
         self.vida_actual = 900
         self.vida_maxima = 900
         self.target_vida = 900
+        self.estado_vida = False
         #barra
         self.barra_vida = 300
         self.proporcion_vida = self.vida_maxima / self.barra_vida
@@ -51,6 +53,9 @@ class Spidey(pygame.sprite.Sprite):
         self.monedas = 0
         self.puntaje_anterior = 0
         self.puntaje_mas_alto = 0
+        self.coin_play = mixer.Sound("./src/recursos/sonidos/Coin.wav")
+        self.power_up_play = mixer.Sound("./src/recursos/sonidos/Powerup.wav")
+        self.kick_play = mixer.Sound("./src/recursos/sonidos/Kick.wav")
 
     def recibir_daño(self,cantidad):
         if self.target_vida > 0:
@@ -108,24 +113,28 @@ class Spidey(pygame.sprite.Sprite):
     def mover_personaje(self,velocidad):
         for lado in self.lados:
             self.lados[lado].x += velocidad
-    
+
+    def saltar(self):
+        self.desplazamiento_y = self.potencia
+        self.saltos_realizados += 1
+
+
     def aplicar_gravedad(self,pantalla,lista_plataformas):
         if self.esta_saltando:
             self.animar_personaje(pantalla, "salta")
             for lado in self.lados:
                 self.lados[lado].y += self.desplazamiento_y
-
             if self.desplazamiento_y + self.gravedad < self.limite_vel_caida:
                 self.desplazamiento_y += self.gravedad
-                
+
         for plat in lista_plataformas:
             if self.lados['top'].colliderect(plat.lados["bottom"]):
                 self.desplazamiento_y += self.gravedad
             if self.lados['bottom'].colliderect(plat.lados["top"]):
                 self.desplazamiento_y = 0
-                # self.saltos_actuales = self.saltos
                 self.esta_saltando = False
-                self.lados['main'].bottom = plat.lados['main'].top -2
+                self.saltos_realizados = 2
+                self.lados['main'].bottom = plat.lados['main'].top + 5
                 break
             else:
                 self.esta_saltando = True
@@ -137,8 +146,11 @@ class Spidey(pygame.sprite.Sprite):
             return -1
         
     def cooldown(self):
-        if self.cooldown_proyectil > 0:
-            self.cooldown_proyectil -= 1
+        if self.cooldown_proyectil  >= 15:
+            self.cooldown_proyectil  = 0
+        elif self.cooldown_proyectil  > 0:
+            self.cooldown_proyectil  += 1
+
 
     def crear_proyectil(self):
         return Telaraña(tamaño_proyectil,velocidad_proyectil,personaje_telaraña,(self.lados["main"].x,self.lados["main"].y),self.direction())
@@ -161,44 +173,77 @@ class Spidey(pygame.sprite.Sprite):
         pantalla.blit(moneda_score,(972,20))
 
 
-
-    def hit_collision(self,g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo):
+    def hit_collision(self,g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo,g_escalera,all_plat,g_next):
+        #colision con enemigo
         for enemigo in g_enemigos:
-            print(len(g_enemigos))
             if self.lados["bottom"].colliderect(enemigo.lados["top"]):
+                self.kick_play.play()
                 self.puntaje += 300
-                enemigo.kill()
+                enemigo.vida = False
             elif self.lados["right"].colliderect(enemigo.lados["main"]):
-                for i in range(len(g_enemigos)):
-                    self.recibir_daño(100)
+                # for i in range(len(g_enemigos)):
+                    self.recibir_daño(75)
+                    break
+        #colision con cajas sorpresa  
         for plat in g_sorpresa:
             if plat.golpeado == False:
                 if self.lados["top"].colliderect(plat.lados["bottom"]):
                     plat.golpeado = True
                     coordenadas = (plat.rect.x+5,plat.rect.y - 80)
                     g_moneda.add(self.crear_moneda(coordenadas))
+        #colision con caja con booster
         for plat in g_booster:
             if plat.golpeado == False:
                 if self.lados["top"].colliderect(plat.lados["bottom"]):
                     plat.golpeado = True
                     coordenadas = (plat.rect.x+5,plat.rect.y - 80)
                     g_hongo.add(self.crear_booster(coordenadas))
+        #colision con booster hongo
         for hongo in g_hongo:
             if self.lados["main"].colliderect(hongo.lados["main"]):
+                self.power_up_play.play()
                 self.puntaje += 1000
                 self.recibir_vida(300)
                 hongo.kill()
+        #colision con caja comun
         for plat in g_ordinarias:
             if self.lados["top"].colliderect(plat.lados["bottom"]):
                 plat.kill()
+        #colision con moneda
         for moneda in g_moneda:
             if self.lados["main"].colliderect(moneda.lados["main"]):
+                self.coin_play.play()
+
                 self.puntaje += 100
                 self.monedas += 1
-                print(self.puntaje)
                 moneda.kill()
+        #colision con escalera
+        for escalera in g_escalera:
+            if (self.lados["main"].colliderect(escalera.lados["left"])) or (self.lados["main"].colliderect(escalera.lados["right"])):
+                self.colision = True
+        for plat in all_plat:
+            if self.lados["top"].colliderect(plat.lados["bottom"]):
+                if self.desplazamiento_y < 0:
+                    self.lados["main"].top = plat.lados["main"].bottom 
+                    self.desplazamiento_y *= -1
+            if self.lados["left"].colliderect(plat.lados["right"]):
+                self.lados["main"].left = plat.lados["main"].right 
+                self.colision = True
+            if self.lados["right"].colliderect(plat.lados["left"]):
+                self.lados["main"].right = plat.lados["main"].left 
+                self.colision = True
+            if self.lados["bottom"].colliderect(plat.lados["top"]):
+                self.lados['main'].bottom = plat.lados['main'].top 
+                self.colision = False
+        for plat in g_next:
+            if self.lados["main"].colliderect(plat.lados["main"]):
+                self.siguiente_nivel = True
 
-    def update(self,pantalla,g_enemigos,g_plataformas,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo):
+    def resetear_vida(self):
+        self.vida_actual = 900
+        self.estado_vida = False
+
+    def accion(self,pantalla):
         match self.que_hace:
             case "derecha":
                 self.derecha = True
@@ -206,31 +251,39 @@ class Spidey(pygame.sprite.Sprite):
                 if not self.esta_saltando:
                     self.animar_personaje(pantalla,"camina_derecha")
                 self.mover_personaje(self.velocidad)
+                print("aaa")
             case "izquierda":
                 self.izquierda =  True
                 self.derecha = False
                 if not self.esta_saltando: 
                     self.animar_personaje(pantalla,"camina_izquierda")
                 self.mover_personaje(- 1 * self.velocidad  )
-            case "salta": 
-                self.esta_saltando = True 
-                self.desplazamiento_y = self.potencia
+            case "salta":
+                    self.esta_saltando = True
+                    self.desplazamiento_y = self.potencia
             case "defensa" :
                 if not self.esta_saltando: 
                     self.animar_una_vez(pantalla, "personaje_defensa" )  
             case "dispara" : 
                 if not self.esta_saltando:
                     self.animar_personaje(pantalla,"personaje_ataca")
-                    print(self.cooldown_proyectil)
-                    self.cooldown()
             case "quieto": 
                 if not self.esta_saltando:
                     if self.derecha:
                         self.animar_personaje(pantalla, "quieto_derecha" )
                     elif self.izquierda:
                         self.animar_personaje(pantalla, "quieto_izquierda" )  
+
+    def esta_vivo(self):
+        if self.vida_actual == 0 or (self.lados["main"].y < 0 or self.lados["main"].y > HEIGHT):
+            self.estado_vida = True
+
+    def update(self,pantalla,g_enemigos,g_plataformas,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo,g_escalera,all_plat,g_next):
+        self.cooldown()
+        self.accion(pantalla)
+        self.esta_vivo()
         self.aplicar_gravedad(pantalla,g_plataformas)
-        self.hit_collision(g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo)
+        self.hit_collision(g_enemigos,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo,g_escalera,all_plat,g_next)
         self.generar_barra_vida(pantalla)
         self.draw_puntaje(font,pantalla)
 
@@ -249,7 +302,7 @@ class Telaraña(pygame.sprite.Sprite):
         self.image = personaje_telaraña[0]
         self.rect= self.image.get_rect()
         self.rect.x = posicion_actual[0]
-        self.rect.y = posicion_actual[1] + 10
+        self.rect.y = posicion_actual[1] + 28
         self.lados = obtener_rectangulos(self.rect)
         self.direction = direction
         
@@ -273,9 +326,8 @@ class Telaraña(pygame.sprite.Sprite):
                 lista = pygame.sprite.spritecollide(proyectil,enemigo,True)
                 if len(lista) != 0:
                     self.kill()
-                    enemigo.vida = True
+                    enemigo.vida = False
                     personaje.puntaje += 300
-
 
     def update(self,velocidad,g_proyectil,enemigo,personaje):
         self.mover(velocidad)

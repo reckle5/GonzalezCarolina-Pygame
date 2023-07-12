@@ -13,8 +13,8 @@ tiempo_juego = 1
 
 #PERSONAJE
 tamaño_personaje = (70,120)
-x_inicial = 300  
-y_inicial = 725
+x_inicial = 450  
+y_inicial = 750
 coordenadas = (x_inicial,y_inicial) 
 
 #enemigos
@@ -29,6 +29,7 @@ velocidad_proyectil = 15
 
 #font
 font = pygame.font.Font("./src/recursos/game_font/PressStart2P-Regular.ttf", 15)
+font_ranking = pygame.font.Font("./src/recursos/game_font/ARCADE_I.TTF", 15)
 
 #random color
 r = random.randint(0,255)

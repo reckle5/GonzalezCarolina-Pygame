@@ -17,7 +17,7 @@ class Booster(pygame.sprite.Sprite):
         self.rect.y= coordenadas[1]
         self.lados = obtener_rectangulos(self.rect)
         self.velocidad = 10
-        self.gravedad = 18
+        self.gravedad = 7
 
     def mover(self):
         for lado in self.lados:
@@ -28,9 +28,9 @@ class Booster(pygame.sprite.Sprite):
     def animar(self,pantalla):
         pantalla.blit(self.image, self.lados["main"])
 
-    def draw_rect(self,pantalla):
+    def draw_rect(self,pantalla, color):
         for lado in self.lados:
-                pygame.draw.rect(pantalla, "Black", self.lados[lado],3)
+                pygame.draw.rect(pantalla, color, self.lados[lado],3)
     
     def seguir_scroll(self,fondo,personaje):
         for lado in self.lados:

@@ -112,8 +112,8 @@ class Plataforma(pygame.sprite.Sprite):
                     self.lados[lado].x -= 20
                 elif fondo.desplazamiento_izquierda and personaje.que_hace == "izquierda":
                     self.lados[lado].x += 20
-                    
 
     def update(self,pantalla,fondo,personaje):
         self.seguir_scroll(fondo,personaje)
         self.animar_plataforma(pantalla)
+
