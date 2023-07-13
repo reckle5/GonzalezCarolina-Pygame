@@ -3,10 +3,10 @@ import pygame
 def obtener_rectangulos(rect_principal)->dict:
     diccionario ={}
     diccionario['main'] = rect_principal
-    diccionario["bottom"] = pygame.Rect(rect_principal.left, rect_principal.bottom-10, rect_principal.width,10)
-    diccionario["right"] = pygame.Rect(rect_principal.right-2, rect_principal.top, 4, rect_principal.height)
+    diccionario["bottom"] = pygame.Rect(rect_principal.left, rect_principal.bottom-15, rect_principal.width,15)
+    diccionario["right"] = pygame.Rect(rect_principal.right-5, rect_principal.top, 4, rect_principal.height)
     diccionario["left"] = pygame.Rect(rect_principal.left, rect_principal.top, 4, rect_principal.height)
-    diccionario["top"] = pygame.Rect(rect_principal.left, rect_principal.top, rect_principal.width,10)
+    diccionario["top"] = pygame.Rect(rect_principal.left, rect_principal.top, rect_principal.width,15)
     return diccionario
 
 def reescalar_imagenes(lista_animaciones,size):

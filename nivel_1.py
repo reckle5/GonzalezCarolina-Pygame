@@ -58,24 +58,24 @@ plataforma_caja2 = Plataforma((50,50), caja_moneda, (800, 620),False)
 
 plataforma_caja3 = Plataforma((50,50), caja_moneda, (850, 390),False)
 
-plataforma_caja4 = Plataforma((50,50), caja_moneda, (1890, 230),True) #caja invisible
+plataforma_caja4 = Plataforma((50,50), caja_moneda, (1890, 285),True) #caja invisible
 
-plataforma_caja5 = Plataforma((50,50), caja_moneda, (2450, 300),False)
-plataforma_caja6 = Plataforma((50,50), caja_moneda, (2400, 300),False)
+plataforma_caja5 = Plataforma((50,50), caja_moneda, (2350, 350),False)
+plataforma_caja6 = Plataforma((50,50), caja_moneda, (2400, 350),False)
 
 plataforma_caja7 = Plataforma((50,50), caja_moneda, (3550, 500),False)
 
 
-plataforma_caja8 = Plataforma((50,50), caja_moneda, (4350, 300),False) #boost
+plataforma_caja8 = Plataforma((50,50), caja_moneda, (4350, 400),False) #boost
 
-plataforma_caja9 = Plataforma((50,50), caja_moneda, (4900, 550),False)
-plataforma_caja10 = Plataforma((50,50), caja_moneda, (5050, 550),False)
-plataforma_caja11 = Plataforma((50,50), caja_moneda, (5200, 550),False)
-plataforma_caja12 = Plataforma((50,50), caja_moneda, (5350, 550),False)
-plataforma_caja13 = Plataforma((50,50), caja_moneda, (4970, 400),False)
-plataforma_caja14 = Plataforma((50,50), caja_moneda, (5105, 400),False)
-plataforma_caja15 = Plataforma((50,50), caja_moneda, (5250, 400),False)
-plataforma_caja16 = Plataforma((50,50), caja_moneda, (5120, 280),False)
+plataforma_caja9 = Plataforma((50,50), caja_moneda, (4900, 580),False)
+plataforma_caja10 = Plataforma((50,50), caja_moneda, (5050, 580),False)
+plataforma_caja11 = Plataforma((50,50), caja_moneda, (5200, 580),False)
+plataforma_caja12 = Plataforma((50,50), caja_moneda, (5350, 580),False)
+plataforma_caja13 = Plataforma((50,50), caja_moneda, (4970, 450),False)
+plataforma_caja14 = Plataforma((50,50), caja_moneda, (5105, 450),False)
+plataforma_caja15 = Plataforma((50,50), caja_moneda, (5250, 450),False)
+plataforma_caja16 = Plataforma((50,50), caja_moneda, (5120, 300),False)
 
 plataforma_caja17 = Plataforma((50,50), caja_moneda, (6200, 400),False)
 plataforma_caja18 = Plataforma((50,50), caja_moneda, (6250, 400),False)
@@ -88,26 +88,26 @@ plataforma_ladrillo = Plataforma((50,50),caja_ladrillo,(750,620),False)
 plataforma_ladrillo1 = Plataforma((50,50),caja_ladrillo,(800,390),False)
 plataforma_ladrillo2 = Plataforma((50,50),caja_ladrillo,(900,390),False)
 
-plataforma_ladrillo3 = Plataforma((50,50),caja_ladrillo,(2300, 300),False)
-plataforma_ladrillo4 = Plataforma((50,50),caja_ladrillo,(2350, 300),False)
-plataforma_ladrillo5 = Plataforma((50,50),caja_ladrillo,(2500, 300),False)
-plataforma_ladrillo6= Plataforma((50,50),caja_ladrillo,(2550, 300),False)
+plataforma_ladrillo3 = Plataforma((50,50),caja_ladrillo,(2250, 350),False)
+plataforma_ladrillo4 = Plataforma((50,50),caja_ladrillo,(2300, 350),False)
+plataforma_ladrillo5 = Plataforma((50,50),caja_ladrillo,(2450, 350),False)
+plataforma_ladrillo6= Plataforma((50,50),caja_ladrillo,(2500, 350),False)
 
-plataforma_ladrillo7 = Plataforma((50,50),caja_ladrillo,(3750, 300),False)
-plataforma_ladrillo8 = Plataforma((50,50),caja_ladrillo,(3800, 300),False)
-plataforma_ladrillo9 = Plataforma((50,50),caja_ladrillo,(3850, 300),False)
-plataforma_ladrillo10 = Plataforma((50,50),caja_ladrillo,(3900, 300),False)
-plataforma_ladrillo11 = Plataforma((50,50),caja_ladrillo,(3950, 300),False)
-plataforma_ladrillo12 = Plataforma((50,50),caja_ladrillo,(4000, 300),False)
-plataforma_ladrillo13 = Plataforma((50,50),caja_ladrillo,(4200, 300),False)
-plataforma_ladrillo14 = Plataforma((50,50),caja_ladrillo,(4250, 300),False)
-plataforma_ladrillo14 = Plataforma((50,50),caja_ladrillo,(4250, 300),False)
-plataforma_ladrillo15 = Plataforma((50,50),caja_ladrillo,(4300, 300),False)
+plataforma_ladrillo7 = Plataforma((50,50),caja_ladrillo,(3750, 400),False)
+plataforma_ladrillo8 = Plataforma((50,50),caja_ladrillo,(3800, 400),False)
+plataforma_ladrillo9 = Plataforma((50,50),caja_ladrillo,(3850, 400),False)
+plataforma_ladrillo10 = Plataforma((50,50),caja_ladrillo,(3900, 400),False)
+plataforma_ladrillo11 = Plataforma((50,50),caja_ladrillo,(3950, 400),False)
+plataforma_ladrillo12 = Plataforma((50,50),caja_ladrillo,(4000, 400),False)
+plataforma_ladrillo13 = Plataforma((50,50),caja_ladrillo,(4200, 400),False)
+plataforma_ladrillo14 = Plataforma((50,50),caja_ladrillo,(4250, 400),False)
+plataforma_ladrillo14 = Plataforma((50,50),caja_ladrillo,(4250, 400),False)
+plataforma_ladrillo15 = Plataforma((50,50),caja_ladrillo,(4300, 400),False)
 
 plataforma_ladrillo16 = Plataforma((50,50),caja_ladrillo,(3500, 500),False)
 plataforma_ladrillo17 = Plataforma((50,50),caja_ladrillo,(3600, 500),False)
 
-plataforma_ladrillo18 = Plataforma((50,50),caja_ladrillo,(4350, 500),False)
+plataforma_ladrillo18 = Plataforma((50,50),caja_ladrillo,(4400, 550),False)
 
 plataforma_ladrillo19 = Plataforma((50,50),caja_ladrillo,(5800, 550),False)
 plataforma_ladrillo20 = Plataforma((50,50),caja_ladrillo,(5900, 400),False)
@@ -207,3 +207,8 @@ lista_escalera = [escalera_1,
 topes = [tope1,tope2]
 
 next_lvl =  Generar_rects(9800,600,50,800)
+
+tope_e_1 = Generar_rects(460,300,30,100)
+tope_e_2= Generar_rects(1350,300,30,100)
+
+topes_lvl2= [tope_e_1,tope_e_2]

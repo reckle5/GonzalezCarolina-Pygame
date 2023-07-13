@@ -29,9 +29,12 @@ velocidad_proyectil = 15
 
 #font
 font = pygame.font.Font("./src/recursos/game_font/PressStart2P-Regular.ttf", 15)
-font_ranking = pygame.font.Font("./src/recursos/game_font/ARCADE_I.TTF", 15)
+font_ranking = pygame.font.Font("./src/recursos/game_font/ARCADE_I.TTF", 25)
+font_ranking_bold = pygame.font.Font("./src/recursos/game_font/ARCADE_N.TTF", 18)
+
 
 #random color
+color_base = "Grey"
 r = random.randint(0,255)
 g = random.randint(0,255)
 b = random.randint(0,255)

@@ -17,8 +17,8 @@ class Spidey(pygame.sprite.Sprite):
         self.desplazamiento_y = 0
         #GRAVEDAD 
         self.gravedad = 2
-        self.potencia = -22
-        self.limite_vel_caida = 22
+        self.potencia = -25
+        self.limite_vel_caida = 25
         self.esta_saltando = False
         self.saltos_realizados = 2 
         #NIVEL GANADO
@@ -134,7 +134,7 @@ class Spidey(pygame.sprite.Sprite):
                 self.desplazamiento_y = 0
                 self.esta_saltando = False
                 self.saltos_realizados = 2
-                self.lados['main'].bottom = plat.lados['main'].top + 5
+                self.lados['main'].bottom = plat.lados['main'].top + 3
                 break
             else:
                 self.esta_saltando = True
@@ -181,9 +181,7 @@ class Spidey(pygame.sprite.Sprite):
                 self.puntaje += 300
                 enemigo.vida = False
             elif self.lados["right"].colliderect(enemigo.lados["main"]):
-                # for i in range(len(g_enemigos)):
-                    self.recibir_daño(75)
-                    break
+                    self.recibir_daño(100)
         #colision con cajas sorpresa  
         for plat in g_sorpresa:
             if plat.golpeado == False:
@@ -213,7 +211,6 @@ class Spidey(pygame.sprite.Sprite):
         for moneda in g_moneda:
             if self.lados["main"].colliderect(moneda.lados["main"]):
                 self.coin_play.play()
-
                 self.puntaje += 100
                 self.monedas += 1
                 moneda.kill()
@@ -275,7 +272,7 @@ class Spidey(pygame.sprite.Sprite):
                         self.animar_personaje(pantalla, "quieto_izquierda" )  
 
     def esta_vivo(self):
-        if self.vida_actual == 0 or (self.lados["main"].y < 0 or self.lados["main"].y > HEIGHT):
+        if self.vida_actual == 0 or (self.lados["main"].y < -100 or self.lados["main"].y > HEIGHT ):
             self.estado_vida = True
 
     def update(self,pantalla,g_enemigos,g_plataformas,g_sorpresa,g_ordinarias,g_moneda,g_booster,g_hongo,g_escalera,all_plat,g_next):
@@ -314,7 +311,7 @@ class Telaraña(pygame.sprite.Sprite):
         if self.direction == 1:
             self.lados["main"].x += velocidad 
         elif self.direction == -1:
-            self.lados["main"].x -= velocidad 
+            self.lados["main"].x -= velocidad + 20
     
     
     def off_screen(self):

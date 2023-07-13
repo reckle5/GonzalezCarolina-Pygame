@@ -41,7 +41,7 @@ class EstadoJuego():
         self.tortuga_group = pygame.sprite.Group()
         self.all_enemies = pygame.sprite.Group()
         self.tortuga = Enemy((50,50),animaciones_tortuga,(4000, 250),10)
-        self.donkey = Enemy((100,100),animaciones_donkey,(600,310),10)
+        self.donkey = Enemy((100,100),animaciones_donkey,(600,210),10)
         self.tortuga_group.add(self.tortuga)
         self.all_enemies.add(self.goomba_group)
         self.all_enemies.add(self.tortuga_group)
@@ -99,7 +99,9 @@ class EstadoJuego():
         
         self.piso_lvl_2 = pygame.sprite.Group()
         self.piso_lvl_2.add(self.lista_piso_lvl_2)
-        
+        self.topes_lvl_2 = pygame.sprite.Group()
+        self.topes_lvl_2.add(topes_lvl2)
+
         agregar_a_grupo(lista_plat_sorpresa,self.plataformas_sorpresa_group)
         agregar_a_grupo(lista_plat_ladrillo,self.plataformas_group) 
         agregar_a_grupo(self.lista_plat_piso, self.plataformas_group)
@@ -145,34 +147,20 @@ class EstadoJuego():
         pygame.display.set_caption("Menu")
 
         pantalla.blit(menu,(550,200))
-        pos = pygame.mouse.get_pos()
         
-        color_base = "Grey"
         boton_inicio = Boton("START GAME", color_base, "White",800, 460, 160,30)
         boton_salir = Boton("QUIT",color_base, "White",800, 520, 100,30)
 
-        for b in [boton_inicio,boton_salir]:
-            b.seleccionar_texto(pos)
-            if b.spidey_visible:
-                pantalla.blit(select_spidey, (b.rect.x - 50, b.rect.y - 15))
-            pantalla.blit(b.text, b.rect)
+        self.evento_botnes(pantalla, boton_inicio,boton_salir,"nivel 1")
+        if boton_inicio:
+            pantalla.blit(self.fondo.image, (0,0))
 
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if boton_inicio.draw(pos):
-                    self.estado_juego = "nivel 1"
-                if boton_salir.draw(pos):
-                    pygame.quit()
-                    sys.exit()
 
-            pygame.display.flip()
+
+        pygame.display.flip()
 
 
     def game_over(self,pantalla):
-        self.personaje_juego.resetear_vida()
 
         fondo_over = pygame.surface.Surface((1800,900))
         fondo_over.fill("Black")
@@ -184,38 +172,45 @@ class EstadoJuego():
 
         pygame.display.set_caption("Game over ")
 
-        pos = pygame.mouse.get_pos()
-        
-        color_base = "Grey"
         boton_return = Boton("RESTART GAME",color_base, "White",800, 520, 60,20)
         boton_salir = Boton("QUIT",color_base, "White",800, 570, 60,20)
 
-        for b in [boton_return,boton_salir]:
+        self.evento_botnes(pantalla,boton_return,boton_salir,"menu")
+
+
+
+        pygame.display.flip()
+
+    def evento_botnes(self,pantalla,boton_1,boton_2,estado:str):
+        pos = pygame.mouse.get_pos()
+
+        for b in [boton_1,boton_2]:
             b.seleccionar_texto(pos)
             if b.spidey_visible:
                 pantalla.blit(select_spidey, (b.rect.x - 50, b.rect.y - 15))
             pantalla.blit(b.text, b.rect)
-        if boton_return.seleccionar_texto(pos):
-            pantalla.blit(boton_return.text, boton_return.rect)
+        if boton_1.seleccionar_texto(pos):
+            pantalla.blit(boton_1.text, boton_1.rect)
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if boton_return.draw(pos):
-                    self.estado_juego = "menu"
-                if boton_salir.draw(pos):
+                if boton_1.draw(pos):
+                    self.estado_juego = estado
+                if boton_2.draw(pos):
                     pygame.quit()
                     sys.exit()
-
-        pygame.display.flip()
-
 
     def nivel_1(self,pantalla):
         self.handler_events()
         self.update_1(pantalla)
         if self.personaje_juego.siguiente_nivel:
+            self.personaje_juego.vida_actual = 900
+            self.personaje_juego.rect.x = x_inicial
+            self.personaje_juego.rect.y = y_inicial
+            self.velocidad = 15
             self.estado_juego = "escribir score"
 
     def handler_events(self):
@@ -290,35 +285,30 @@ class EstadoJuego():
             self.proyectil_group.add(self.personaje_juego.crear_proyectil()) 
             self.personaje_juego.cooldown_proyectil = 1
         
-        elif pygame.K_p in self.teclas_presionadas: 
-            self.parar_elementos()
             
         else:
             self.personaje_juego.que_hace = "quieto"
 
-    # def parar_elementos(self):
-    #     for sprite in self.sprites:
-    #         sprite.stop()
 
     def generar_enemigos(self,cantidad):
         if len(self.goomba_group) == 0:
             for i in range(cantidad):
                 x = random.randrange(2500, 1089, -1)
-                enemigo = Enemy(tamaño_goomba, animaciones_goomba, (x,810),10)
-                self.goomba_group.add(enemigo)
-                self.all_enemies.add(enemigo)
-        
+                enemigo_1 = Enemy(tamaño_goomba, animaciones_goomba, (x,810),10)
+                self.goomba_group.add(enemigo_1)
+                self.all_enemies.add(enemigo_1)
+
     def update_1(self,pantalla):
         if self.estado_juego == "nivel 1":
             pantalla.blit(self.fondo.image, (0,0))
-            self.generar_enemigos(1)
+            self.generar_enemigos(2)
             self.tortuga.encapsular(topes,8)
             coin_score.animar_moneda(pantalla)
             self.proyectil_group.draw(pantalla)
 
             if self.personaje_juego.estado_vida:
                 self.estado_juego = "game over"
-                self.game_over_play.play(-1)
+                self.game_over_play.play()
             
             if self.debug == True:
 
@@ -341,7 +331,7 @@ class EstadoJuego():
             self.all_enemies.update(pantalla,self.fondo,self.personaje_juego,2,self.all_plataformas)
             self.bandera_group.update(self.personaje_juego,self.fondo,pantalla,piso_bandera)
             self.moneda_group.update(pantalla,self.fondo,self.personaje_juego)
-            self.proyectil_group.update(velocidad_proyectil,self.proyectil_group,self.goomba_group,self.personaje_juego)
+            self.proyectil_group.update(velocidad_proyectil,self.proyectil_group,self.all_enemies,self.personaje_juego)
             self.all_plataformas.update(pantalla,self.fondo,self.personaje_juego)
             self.next_level_group.update(pantalla,self.fondo,self.personaje_juego)
             self.personaje_juego.update(pantalla,self.all_enemies,self.all_plataformas,self.plataformas_sorpresa_group,self.plataformas_group,self.moneda_group,self.plataforma_booster_group,self.hongo_boost,self.plataforma_escalera,self.all_plataformas,self.next_level_group)
@@ -355,6 +345,8 @@ class EstadoJuego():
             fondo_over.fill("Black")
             pantalla.blit(fondo_over, (0,0))
             pantalla.blit(self.fondo_lvl_2.image, (450,0))
+            self.donkey.encapsular(self.topes_lvl_2,8)
+
 
             if self.personaje_juego.estado_vida:
                     self.estado_juego = "game over"
@@ -362,6 +354,9 @@ class EstadoJuego():
             if self.debug == True:
                 for piso in self.piso_lvl_2:
                     piso.draw_rect(pantalla, "White")
+                
+                for tope in self.topes_lvl_2:
+                    tope.draw_rect(pantalla, "White")
 
             self.personaje_juego.update(pantalla,self.all_enemies,self.piso_lvl_2,self.plataformas_sorpresa_group,self.plataformas_group,self.moneda_group,self.plataforma_booster_group,self.hongo_boost,self.plataforma_escalera,self.piso_lvl_2,self.next_level_group)
             self.donkey.update(pantalla,self.fondo_lvl_2,self.personaje_juego,1,self.piso_lvl_2)
@@ -381,21 +376,31 @@ class EstadoJuego():
             self.nivel_1(pantalla)
         # elif self.estado_juego == "nivel 2":
         #     self.nivel_2(pantalla)
-        elif self.estado_juego == "reiniciar":
-            self.restart_game(pantalla)
         elif self.estado_juego == "game over":
+            self.personaje_juego.estado_vida = False
+            self.personaje_juego.vida_actual = 900
+            self.personaje_juego.rect.x = x_inicial
+            self.personaje_juego.rect.y = y_inicial
+            self.velocidad = 15
             self.game_over(pantalla)
         elif self.estado_juego == "escribir score":
             self.score(pantalla)
         elif self.estado_juego == "ranking":
+            self.personaje_juego.siguiente_nivel = False
+            self.personaje_juego.estado_vida = False
+            self.personaje_juego.vida_actual = 900
+            self.personaje_juego.rect.x = x_inicial
+            self.personaje_juego.rect.y = y_inicial
+            self.velocidad = 15
             self.print_ranking(pantalla)
 
         pygame.display.flip()
     
     def score(self,pantalla):
         img_score = pygame.image.load("./src/recursos/score.jpg").convert_alpha()
+        img_score = pygame.transform.scale(img_score,(1800,900))
         pantalla.blit(img_score, (0,0))
-        self.draw_text(font_ranking,"INGRESE SUS INICIALES Y PRESIONE ENTER" , "Black", 1200, 300,pantalla)
+        self.draw_text(font_ranking,"INGRESE SUS INICIALES\nY PRESIONE ENTER" , "Black", 1200, 300,pantalla)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -408,7 +413,7 @@ class EstadoJuego():
                     self.guardar_ranking()
                     self.estado_juego = "ranking"
 
-        self.draw_text(font_ranking,self.nombre_actual , (r,g,b), (WIDTH / 2), 400,pantalla)
+        self.draw_text(font_ranking_bold,self.nombre_actual , "Black", 1200, 400,pantalla)
         
         pygame.display.flip()
 
@@ -437,12 +442,18 @@ class EstadoJuego():
                 sys.exit()
 
         img_score = pygame.image.load("./src/recursos/score.jpg").convert_alpha()
+        img_score = pygame.transform.scale(img_score,(1800,900))
         pantalla.blit(img_score, (0,0))
         self.draw_text(font_ranking,"SPIDEY RANKING" , "Black", 1000, 300,pantalla)
 
         ranking = self.leer_archivo_json("score.json")
         ranking_ordenado = ordenar_ranking(ranking,False)
         self.imprimir_archivo_json(ranking_ordenado,pantalla)
+
+        boton_return = Boton("RESTART GAME",color_base, "Black",1400, 700, 60,20)
+        boton_salir = Boton("QUIT",color_base, " Black",1400, 760, 60,20)
+
+        self.evento_botnes(pantalla,boton_return,boton_salir,"menu")
 
     def draw_text(self,fuente,text, text_col, x, y,pantalla):
         img = fuente.render(text, True, text_col)
@@ -456,9 +467,10 @@ class EstadoJuego():
 
     def imprimir_archivo_json(self,datos:list,pantalla)->str:
         score_y = 350
-        for i in datos:
-            self.draw_text(font_ranking,i["nombre"] + ":" + str(i["score"]), "Black", 900, score_y,pantalla)
-            score_y += 50
+        for i in range(5):
+            if i < len(datos):
+                self.draw_text(font_ranking_bold,datos[i]["nombre"] + ":" + str(datos[i]["score"]), "Black", 1200, score_y,pantalla)
+                score_y += 50
 
 def ordenar_ranking(lista:list, asc =True)->list:
 

@@ -39,7 +39,7 @@ class Bandera(pygame.sprite.Sprite):
         self.lados_palo = obtener_rectangulos(self.palo_rect)
         self.contador = 0
         self.bandera_tocada = False
-        self.gravedad = 15
+        self.gravedad = 30
 
         
     def animar_bandera(self,pantalla):
